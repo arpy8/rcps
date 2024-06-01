@@ -9,8 +9,11 @@ def convert_key_to_str(key):
         return f'Key.{key.char}'
     return str(key)
 
+host = '0.0.0.0'
+port = 12345
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('127.0.0.1', 9999))
+server.bind((host, port))
 server.listen()
 
 client, addr = server.accept()
