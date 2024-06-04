@@ -10,7 +10,7 @@ setup(
     description="A tool trojan for control your computer remotely with bunch of other tools.", 
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=["wheel", "termcolor", "setuptools", "argparse", "argparse", "pynput", "pydirectinput"],
+    install_requires=["wheel", "termcolor", "setuptools", "argparse", "argparse", "pynput", "pydirectinput", "opencv-python", "pyautogui"],
     entry_points={
         "console_scripts": [
             "rcps=rcps.main:main",
