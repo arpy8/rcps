@@ -3,9 +3,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import argparse
 
-from utils.__client import launch_client
-from utils.__server import launch_server
-from utils.constant import WELCOME_MESSAGE
+from rcps.utils.base import StreamingServer, ScreenShareClient
+from rcps.utils._constant import WELCOME_MESSAGE
 from rcps.utils.utils import print_colored, load_menu
 
 def home_page():
@@ -27,12 +26,12 @@ def home_page():
 def main():
     try:
         parser = argparse.ArgumentParser(description="A terminal-based IRC-inspired package that enables users to chat on a single server with everyone.")
-        parser.add_argument("-s", "--server", action="store_true", help="launch server side script")
-        parser.add_argument("-c", "--client", type=int,help="launch client side script")
-        parser.add_argument("-k", "--key-logger", type=int, help="launch key logger")
-        parser.add_argument("-i", "--store-ip", type=int, help="store server ip address")
+        parser.add_argument("-s", "--server", action="store_true",  help="launch server side script")
+        parser.add_argument("-c", "--client", action="store_true",  help="launch client side script")
+        parser.add_argument("-k", "--key-logger", action="store_true", help="launch key logger")
+        parser.add_argument("-i", "--ipaddr", type=str, help="ipv4 address of the client")
+        parser.add_argument("-p", "--port", type=int, help="port of the client")
         # parser.add_argument("-d", "--docs", action="store_true", help="documentation about the library")
-        # parser.add_argument("-p", "--", action="store_true", help="clicks a snapshot of the screen.")
         
         args = parser.parse_args()
 
@@ -40,16 +39,47 @@ def main():
             home_page()
 
         if args.server:
-            launch_server()
+            if not args.ipaddr or not args.port:
+                print_colored("Please provide the ip address and port.\n\nExample usage:\n\n\t\t\t\t\t\trcps -s -i 192.168.1.100 -p 8888", "red")
+                exit(0)
+                
+            ipaddr, port = str(args.ipaddr).strip(), int(args.port)
+            
+            if  len([i for i in ipaddr.split(".") if i.isdigit()]) != 4:
+                print_colored("Invalid ip address.", "red")
+                exit()
+            
+            if 0 > port > 65535:
+                print_colored("Invalid port.", "red")
+                exit()
+            
+            server = StreamingServer(ipaddr, port, slots=4, quit_key='q')
+            server.start_server()
         
         if args.client:
-            launch_client('127.0.0.1', args.client)
+            if not args.ipaddr or not args.port:
+                print_colored("Please provide the ip address and port.\n\nExample usage:\n\n\t\t\t\t\t\trcps -c -i 192.168.1.100 -p 8888", "red")
+                exit(0)
+                
+            ipaddr, port = str(args.ipaddr).strip(), int(args.port)
             
+            
+            if  len([i for i in ipaddr.split(".") if i.isdigit()]) != 4:
+                print_colored("Invalid ip address.", "red")
+                exit()
+            
+            if 0 > port > 65535:
+                print_colored("Invalid port.", "red")
+                exit()
+            
+            screen_share_client = ScreenShareClient(ipaddr, port, x_res=1024, y_res=576)
+            screen_share_client.start_stream()
+        
         if args.key_logger:
             pass
         
-        if args.store_ip:
-            pass
+        # if args.store_ip:
+        #     pass
         
         # if args.docs:
         #     open_url("https://youtu.be/-p0a9BJTEvA")

@@ -1,16 +1,13 @@
 import cv2
+import pyautogui
+import numpy as np
+
 import socket
 import pickle
 import struct
 import threading
-import pyautogui
-import numpy as np
-import pydirectinput as pg
-from pynput.keyboard import Listener
 
-from rcps.utils._key_maps import convert_key_to_str, convert_key
-                                
-                                
+
 class StreamingServer:
     def __init__(self, host, port, slots=8, quit_key='q'):
         self.__host = host
@@ -63,17 +60,6 @@ class StreamingServer:
             print("Server not running!")
 
     def __client_connection(self, connection, address):
-        def show(key):
-            self.key_str = convert_key_to_str(key)
-            connection.sendall(self.key_str.encode('utf-8'))
-
-        def listen_keys():
-            with Listener(on_press=show) as listener:
-                listener.join()
-
-        key_thread = threading.Thread(target=listen_keys)
-        key_thread.start()
-
         payload_size = struct.calcsize('>L')
         data = b""
 
@@ -110,9 +96,7 @@ class StreamingServer:
                 self.__used_slots -= 1
                 break
 
-        key_thread.join()
-            
-          
+
 class StreamingClient:
     def __init__(self, host, port):
         self.__host = host
@@ -132,23 +116,9 @@ class StreamingClient:
 
     def __client_streaming(self):
         self.__client_socket.connect((self.__host, self.__port))
-        
         while self.__running:
-            
-            def get_and_run_key():
-                key = self.__client_socket.recv(1024).decode('utf-8')
-                key = convert_key(key)
-                
-                print(key, key)
-                
-                if key is not None:
-                    pg.press(key)
-                    
-            key_thread = threading.Thread(target=get_and_run_key)
-            key_thread.start()
-                
             frame = self._get_frame()
-            _, frame = cv2.imencode('.jpg', frame, self.__encoding_parameters)
+            result, frame = cv2.imencode('.jpg', frame, self.__encoding_parameters)
             data = pickle.dumps(frame, 0)
             size = len(data)
 
@@ -161,7 +131,6 @@ class StreamingClient:
             except BrokenPipeError:
                 self.__running = False
 
-        key_thread.join()
         self._cleanup()
 
     def start_stream(self):
@@ -177,7 +146,29 @@ class StreamingClient:
             self.__running = False
         else:
             print("Client not streaming!")
-            
+
+
+class CameraClient(StreamingClient):
+    def __init__(self, host, port, x_res=1024, y_res=576):
+        self.__x_res = x_res
+        self.__y_res = y_res
+        self.__camera = cv2.VideoCapture(0)
+        super(CameraClient, self).__init__(host, port)
+
+    def _configure(self):
+        self.__camera.set(3, self.__x_res)
+        self.__camera.set(4, self.__y_res)
+        super(CameraClient, self)._configure()
+
+    def _get_frame(self):
+        ret, frame = self.__camera.read()
+        return frame
+
+    def _cleanup(self):
+        self.__camera.release()
+        cv2.destroyAllWindows()
+
+
 class ScreenShareClient(StreamingClient):
     def __init__(self, host, port, x_res=1024, y_res=576):
         self.__x_res = x_res
@@ -189,8 +180,7 @@ class ScreenShareClient(StreamingClient):
         frame = np.array(screen)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = cv2.resize(frame, (self.__x_res, self.__y_res), interpolation=cv2.INTER_AREA)
-        return frame          
-
+        return frame
 
 
 if __name__ == "__main__":
@@ -202,5 +192,5 @@ if __name__ == "__main__":
         screen_share_client = ScreenShareClient("127.0.0.1", 8888, x_res=1024, y_res=576)
         screen_share_client.start_stream()
 
-    start_server()
+    # start_server()
     start_screen_share_client()

@@ -1,6 +1,7 @@
-from .base import Base
+from .base import StreamingServer, ScreenShareClient
 
 __all__ = [
-    "Base",
+    "StreamingServer",
+    "ScreenShareClient",
     "utils",
 ]
