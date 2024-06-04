@@ -41,17 +41,17 @@ key_mapping = {
     'Key.tab': 'tab',
     'Key.up': 'up',
     
-    'Key.`': 'backquote',
-    'Key.-': 'minus', 
-    'Key.=': 'equals', 
-    'Key.[': 'bracketleft', 
-    'Key.]': 'bracketright',
-    'Key.\\': 'backslash', 
-    'Key.;': 'semicolon', 
-    "Key.'": 'quote', 
-    'Key.,': 'comma', 
-    'Key..': 'period', 
-    'Key./': 'slash'
+    'Key.`': '`',
+    'Key.-': '-', 
+    'Key.=': '=', 
+    'Key.[': '[', 
+    'Key.]': ']',
+    'Key.\\': '\\', 
+    'Key.;': ';', 
+    "Key.'": "'", 
+    'Key.,': ',', 
+    'Key..': '.',
+    'Key./': '/'
 }
 
 for char in 'abcdefghijklmnopqrstuvwxyz0123456789':
