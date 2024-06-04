@@ -5,7 +5,7 @@ import struct
 import threading
 import pyautogui
 import numpy as np
-import pydirectinput as pg
+import pyautogui as pg
 from pynput.keyboard import Listener
 
 from rcps.utils._key_maps import convert_key_to_str, convert_key
