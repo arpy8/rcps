@@ -1,0 +1,7 @@
+numpy==2.0.0
+opencv_python==4.10.0.84
+opencv_python==4.10.0.82
+PyAutoGUI==0.9.54
+pynput==1.7.7
+setuptools==65.5.0
+termcolor==2.4.0
