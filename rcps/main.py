@@ -40,7 +40,7 @@ def main():
 
         if args.server:
             if not args.ipaddr or not args.port:
-                print_colored("Please provide the ip address and port.\n\nExample usage:\n\n\t\t\t\t\t\trcps -s -i 192.168.1.100 -p 8888", "red")
+                print_colored("Please provide the ip address and port.\n\nExample usage:\n\nrcps -s -i 192.168.1.100 -p 8888", "red")
                 exit(0)
                 
             ipaddr, port = str(args.ipaddr).strip(), int(args.port)
@@ -58,11 +58,10 @@ def main():
         
         if args.client:
             if not args.ipaddr or not args.port:
-                print_colored("Please provide the ip address and port.\n\nExample usage:\n\n\t\t\t\t\t\trcps -c -i 192.168.1.100 -p 8888", "red")
+                print_colored("Please provide the ip address and port.\n\nExample usage:\n\nrcps -c -i 192.168.1.100 -p 8888", "red")
                 exit(0)
                 
             ipaddr, port = str(args.ipaddr).strip(), int(args.port)
-            
             
             if  len([i for i in ipaddr.split(".") if i.isdigit()]) != 4:
                 print_colored("Invalid ip address.", "red")

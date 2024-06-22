@@ -7,9 +7,8 @@ import pyautogui
 import numpy as np
 import pyautogui as pg
 from pynput.keyboard import Listener
-
+from rcps.utils.utils import print_colored
 from rcps.utils._key_maps import convert_key_to_str, convert_key
-                                
                                 
 class StreamingServer:
     def __init__(self, host, port, slots=8, quit_key='q'):
@@ -45,6 +44,7 @@ class StreamingServer:
                 self.__block.release()
                 continue
             else:
+                print_colored("Connection accepted!")
                 self.__used_slots += 1
             self.__block.release()
             thread = threading.Thread(target=self.__client_connection, args=(connection, address,))
@@ -139,8 +139,6 @@ class StreamingClient:
                 key = self.__client_socket.recv(1024).decode('utf-8')
                 key = convert_key(key)
                 
-                print(key, key)
-                
                 if key is not None:
                     pg.press(key)
                     
@@ -168,6 +166,7 @@ class StreamingClient:
         if self.__running:
             print("Client is already streaming!")
         else:
+            print_colored("Client is streaming!")
             self.__running = True
             client_thread = threading.Thread(target=self.__client_streaming)
             client_thread.start()
