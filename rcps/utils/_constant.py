@@ -57,6 +57,20 @@ WELCOME_MESSAGE = f"""{_BANNER}
 RCPS is a simple and lightweight tool to control remote devices connected over the same network.
 """
 
+DOCS = """
+Server side documentation:\n
+    To launch the server side script, use the -s flag.\n
+    Use the The ip address and port.\n\nExample usage:\n\nrcps -c -i 246.53.232.17 -p 8888
+    For now, please visit the following link:\n
+        https://youtu.be/-p0a9BJTEvA\n
+
+Client side documentation:\n
+    To launch the server side script, use the -c flag.\n
+    Use the The ip address and port.\n\nExample usage:\n\nrcps -c -i 246.53.232.17 -p 8888
+    For now, please visit the following link:\n
+        https://youtu.be/-p0a9BJTEvA\n
+"""
+
 def animate(string):
   print("\033[H\033[J", end="")
   
@@ -82,3 +96,5 @@ if __name__ == '__main__':
   
   print("\033[H\033[J", end="")
   print_colored(WELCOME_MESSAGE)
+  
+  
