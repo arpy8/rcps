@@ -5,7 +5,7 @@ __client.py
 __server.py
 test.ipynb
 pypi.txt
-.env
+.venv
 todo
 
 data/
