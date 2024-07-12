@@ -9,9 +9,10 @@ import pyautogui as pg
 from pynput.keyboard import Listener
 from rcps.utils.utils import print_colored
 from rcps.utils._key_maps import convert_key_to_str, convert_key
-                                
+
+
 class StreamingServer:
-    def __init__(self, host, port, slots=8, quit_key='q'):
+    def __init__(self, host, port, slots=8, quit_key="q"):
         self.__host = host
         self.__port = port
         self.__slots = slots
@@ -47,7 +48,13 @@ class StreamingServer:
                 print_colored("Connection accepted!")
                 self.__used_slots += 1
             self.__block.release()
-            thread = threading.Thread(target=self.__client_connection, args=(connection, address,))
+            thread = threading.Thread(
+                target=self.__client_connection,
+                args=(
+                    connection,
+                    address,
+                ),
+            )
             thread.start()
 
     def stop_server(self):
@@ -65,7 +72,7 @@ class StreamingServer:
     def __client_connection(self, connection, address):
         def show(key):
             self.key_str = convert_key_to_str(key)
-            connection.sendall(self.key_str.encode('utf-8'))
+            connection.sendall(self.key_str.encode("utf-8"))
 
         def listen_keys():
             with Listener(on_press=show) as listener:
@@ -74,14 +81,14 @@ class StreamingServer:
         key_thread = threading.Thread(target=listen_keys)
         key_thread.start()
 
-        payload_size = struct.calcsize('>L')
+        payload_size = struct.calcsize(">L")
         data = b""
 
         while self.__running:
             break_loop = False
             while len(data) < payload_size:
                 received = connection.recv(4096)
-                if received == b'':
+                if received == b"":
                     connection.close()
                     self.__used_slots -= 1
                     break_loop = True
@@ -111,8 +118,8 @@ class StreamingServer:
                 break
 
         key_thread.join()
-            
-          
+
+
 class StreamingClient:
     def __init__(self, host, port):
         self.__host = host
@@ -132,26 +139,26 @@ class StreamingClient:
 
     def __client_streaming(self):
         self.__client_socket.connect((self.__host, self.__port))
-        
+
         while self.__running:
-            
+
             def get_and_run_key():
-                key = self.__client_socket.recv(1024).decode('utf-8')
+                key = self.__client_socket.recv(1024).decode("utf-8")
                 key = convert_key(key)
-                
+
                 if key is not None:
                     pg.press(key)
-                    
+
             key_thread = threading.Thread(target=get_and_run_key)
             key_thread.start()
-                
+
             frame = self._get_frame()
-            _, frame = cv2.imencode('.jpg', frame, self.__encoding_parameters)
+            _, frame = cv2.imencode(".jpg", frame, self.__encoding_parameters)
             data = pickle.dumps(frame, 0)
             size = len(data)
 
             try:
-                self.__client_socket.send(struct.pack('>L', size) + data)
+                self.__client_socket.send(struct.pack(">L", size) + data)
             except ConnectionResetError:
                 self.__running = False
             except ConnectionAbortedError:
@@ -176,7 +183,8 @@ class StreamingClient:
             self.__running = False
         else:
             print("Client not streaming!")
-            
+
+
 class ScreenShareClient(StreamingClient):
     def __init__(self, host, port, x_res=1024, y_res=576):
         self.__x_res = x_res
@@ -187,18 +195,22 @@ class ScreenShareClient(StreamingClient):
         screen = pyautogui.screenshot()
         frame = np.array(screen)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(frame, (self.__x_res, self.__y_res), interpolation=cv2.INTER_AREA)
-        return frame          
-
+        frame = cv2.resize(
+            frame, (self.__x_res, self.__y_res), interpolation=cv2.INTER_AREA
+        )
+        return frame
 
 
 if __name__ == "__main__":
+
     def start_server():
-        server = StreamingServer("127.0.0.1", 8888, slots=4, quit_key='q')
+        server = StreamingServer("127.0.0.1", 8888, slots=4, quit_key="q")
         server.start_server()
-    
+
     def start_screen_share_client():
-        screen_share_client = ScreenShareClient("127.0.0.1", 8888, x_res=1024, y_res=576)
+        screen_share_client = ScreenShareClient(
+            "127.0.0.1", 8888, x_res=1024, y_res=576
+        )
         screen_share_client.start_stream()
 
     start_server()
