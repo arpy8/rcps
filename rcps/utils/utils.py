@@ -23,6 +23,10 @@ def load_menu():
         user_choice = input("-> ")
 
         if user_choice == "1":
+            print("\033[H\033[J", end="")
+            return user_choice, DEFAULT_HOST, DEFAULT_PORT
+
+        elif user_choice == "2":
             ipaddr = input("Enter IP Address: ")
 
             if not ipaddr:
@@ -34,11 +38,9 @@ def load_menu():
             if not port:
                 print_colored("Invalid Port.", "red")
                 continue
-
+ 
+            print("\033[H\033[J", end="")
             return user_choice, ipaddr, port
-
-        elif user_choice == "2":
-            return user_choice, DEFAULT_HOST, DEFAULT_PORT
 
         elif user_choice == "3":
             ipaddr = input("Enter IP Address: ")
@@ -53,6 +55,7 @@ def load_menu():
                 print_colored("Invalid Port.", "red")
                 continue
 
+            print("\033[H\033[J", end="")
             return user_choice, ipaddr, port
 
         elif user_choice == "4":

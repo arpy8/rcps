@@ -85,38 +85,54 @@ class StreamingServer:
         data = b""
 
         while self.__running:
-            break_loop = False
-            while len(data) < payload_size:
-                received = connection.recv(4096)
-                if received == b"":
+            try:
+                break_loop = False
+                while len(data) < payload_size:
+                    received = connection.recv(4096)
+                    if received == b"":
+                        connection.close()
+                        self.__used_slots -= 1
+                        break_loop = True
+                        break
+                    data += received
+
+                if break_loop:
+                    break
+
+                packed_msg_size = data[:payload_size]
+                data = data[payload_size:]
+
+                msg_size = struct.unpack(">L", packed_msg_size)[0]
+
+                while len(data) < msg_size:
+                    data += connection.recv(4096)
+
+                frame_data = data[:msg_size]
+                data = data[msg_size:]
+
+                frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+                frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+                cv2.imshow(str(address), frame)
+                if cv2.waitKey(1) == ord(self.__quit_key):
                     connection.close()
                     self.__used_slots -= 1
-                    break_loop = True
                     break
-                data += received
-
-            if break_loop:
-                break
-
-            packed_msg_size = data[:payload_size]
-            data = data[payload_size:]
-
-            msg_size = struct.unpack(">L", packed_msg_size)[0]
-
-            while len(data) < msg_size:
-                data += connection.recv(4096)
-
-            frame_data = data[:msg_size]
-            data = data[msg_size:]
-
-            frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
-            frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-            cv2.imshow(str(address), frame)
-            if cv2.waitKey(1) == ord(self.__quit_key):
+            # except ConnectionResetError:
+            #     connection.close()
+            #     self.__used_slots -= 1
+            #     break
+            # except ConnectionAbortedError:
+            #     connection.close()
+            #     self.__used_slots -= 1
+            #     break
+            # except BrokenPipeError:
+            #     connection.close()
+            #     self.__used_slots -= 1
+            #     break
+            except Exception as e:
+                print(e)
                 connection.close()
-                self.__used_slots -= 1
                 break
-
         key_thread.join()
 
 
@@ -138,37 +154,40 @@ class StreamingClient:
         cv2.destroyAllWindows()
 
     def __client_streaming(self):
-        self.__client_socket.connect((self.__host, self.__port))
+        try:
+            self.__client_socket.connect((self.__host, self.__port))
 
-        while self.__running:
+            while self.__running:
 
-            def get_and_run_key():
-                key = self.__client_socket.recv(1024).decode("utf-8")
-                key = convert_key(key)
+                def get_and_run_key():
+                    key = self.__client_socket.recv(1024).decode("utf-8")
+                    key = convert_key(key)
 
-                if key is not None:
-                    pg.press(key)
+                    if key is not None:
+                        pg.press(key)
 
-            key_thread = threading.Thread(target=get_and_run_key)
-            key_thread.start()
+                key_thread = threading.Thread(target=get_and_run_key)
+                key_thread.start()
 
-            frame = self._get_frame()
-            _, frame = cv2.imencode(".jpg", frame, self.__encoding_parameters)
-            data = pickle.dumps(frame, 0)
-            size = len(data)
+                frame = self._get_frame()
+                _, frame = cv2.imencode(".jpg", frame, self.__encoding_parameters)
+                data = pickle.dumps(frame, 0)
+                size = len(data)
 
-            try:
-                self.__client_socket.send(struct.pack(">L", size) + data)
-            except ConnectionResetError:
-                self.__running = False
-            except ConnectionAbortedError:
-                self.__running = False
-            except BrokenPipeError:
-                self.__running = False
+                try:
+                    self.__client_socket.send(struct.pack(">L", size) + data)
+                except ConnectionResetError:
+                    self.__running = False
+                except ConnectionAbortedError:
+                    self.__running = False
+                except BrokenPipeError:
+                    self.__running = False
 
-        key_thread.join()
-        self._cleanup()
-
+            key_thread.join()
+            self._cleanup()
+        except Exception as e:
+            print_colored(e, "red")
+            
     def start_stream(self):
         if self.__running:
             print("Client is already streaming!")

@@ -19,7 +19,7 @@ def home_page():
 
         print("\033[H\033[J", end="")
 
-        load_menu()
+        return load_menu()
 
     except KeyboardInterrupt:
         print_colored("\n\nExiting...", "red")
@@ -51,13 +51,35 @@ def main():
         args = parser.parse_args()
 
         if not any(vars(args).values()):
-            home_page()
-
+            response, args.ipaddr, args.port = home_page()
+            if response in ["1", "2"]:
+                print_colored("Starting server...", "blue")
+                try:
+                    print("\033[H\033[J", end="")
+                    print_colored("Server started successfully at http://{}:{}".format(args.ipaddr, args.port), "green")
+                    server = StreamingServer(args.ipaddr, args.port, slots=4, quit_key="q")
+                    server.start_server()
+                except KeyboardInterrupt:
+                    print_colored("\n\nExiting...", "red")
+                    exit(0)
+            
+            elif response == "3":
+                print_colored("Starting client...", "blue")
+                try:
+                    print("\033[H\033[J", end="")
+                    screen_share_client = ScreenShareClient(str(args.ipaddr), int(args.port), x_res=1024, y_res=576)
+                    screen_share_client.start_stream()
+                except KeyboardInterrupt:
+                    print_colored("\n\nExiting...", "red")
+                    exit(0)
+            
         if args.key_logger:
             print("Key logger not implemented yet.")
+            exit(0)
 
         # if args.store_ip:
-        #     pass
+        #     print("IP address not stored yet.")
+        #     exit(0)
 
         if args.docs:
             print(DOCS)
