@@ -1,4 +1,5 @@
-import sys, os
+import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -56,23 +57,32 @@ def main():
                 print_colored("Starting server...", "blue")
                 try:
                     print("\033[H\033[J", end="")
-                    print_colored("Server started successfully at http://{}:{}".format(args.ipaddr, args.port), "green")
-                    server = StreamingServer(args.ipaddr, args.port, slots=4, quit_key="q")
+                    print_colored(
+                        "Server started successfully at http://{}:{}".format(
+                            args.ipaddr, args.port
+                        ),
+                        "green",
+                    )
+                    server = StreamingServer(
+                        args.ipaddr, args.port, slots=4, quit_key="q"
+                    )
                     server.start_server()
                 except KeyboardInterrupt:
                     print_colored("\n\nExiting...", "red")
                     exit(0)
-            
+
             elif response == "3":
                 print_colored("Starting client...", "blue")
                 try:
                     print("\033[H\033[J", end="")
-                    screen_share_client = ScreenShareClient(str(args.ipaddr), int(args.port), x_res=1024, y_res=576)
+                    screen_share_client = ScreenShareClient(
+                        str(args.ipaddr), int(args.port), x_res=1024, y_res=576
+                    )
                     screen_share_client.start_stream()
                 except KeyboardInterrupt:
                     print_colored("\n\nExiting...", "red")
                     exit(0)
-            
+
         if args.key_logger:
             print("Key logger not implemented yet.")
             exit(0)

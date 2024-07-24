@@ -38,7 +38,7 @@ def load_menu():
             if not port:
                 print_colored("Invalid Port.", "red")
                 continue
- 
+
             print("\033[H\033[J", end="")
             return user_choice, ipaddr, port
 

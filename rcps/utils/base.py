@@ -1,4 +1,5 @@
 import cv2
+import time
 import socket
 import pickle
 import struct
@@ -71,8 +72,11 @@ class StreamingServer:
 
     def __client_connection(self, connection, address):
         def show(key):
-            self.key_str = convert_key_to_str(key)
-            connection.sendall(self.key_str.encode("utf-8"))
+            try:
+                self.key_str = convert_key_to_str(key)
+                connection.sendall(self.key_str.encode("utf-8"))
+            except Exception as e:
+                print_colored(e, "red")
 
         def listen_keys():
             with Listener(on_press=show) as listener:
@@ -117,18 +121,7 @@ class StreamingServer:
                     connection.close()
                     self.__used_slots -= 1
                     break
-            # except ConnectionResetError:
-            #     connection.close()
-            #     self.__used_slots -= 1
-            #     break
-            # except ConnectionAbortedError:
-            #     connection.close()
-            #     self.__used_slots -= 1
-            #     break
-            # except BrokenPipeError:
-            #     connection.close()
-            #     self.__used_slots -= 1
-            #     break
+
             except Exception as e:
                 print(e)
                 connection.close()
@@ -154,10 +147,12 @@ class StreamingClient:
         cv2.destroyAllWindows()
 
     def __client_streaming(self):
-        try:
-            self.__client_socket.connect((self.__host, self.__port))
+        RETRY_ATTEMPTS = 5
+        RETRY_DELAY = 5
 
-            while self.__running:
+        while RETRY_ATTEMPTS > 0:
+            try:
+                self.__client_socket.connect((self.__host, self.__port))
 
                 def get_and_run_key():
                     key = self.__client_socket.recv(1024).decode("utf-8")
@@ -166,28 +161,47 @@ class StreamingClient:
                     if key is not None:
                         pg.press(key)
 
-                key_thread = threading.Thread(target=get_and_run_key)
-                key_thread.start()
+                while self.__running:
+                    key_thread = threading.Thread(target=get_and_run_key)
+                    key_thread.start()
 
-                frame = self._get_frame()
-                _, frame = cv2.imencode(".jpg", frame, self.__encoding_parameters)
-                data = pickle.dumps(frame, 0)
-                size = len(data)
+                    frame = self._get_frame()
+                    _, frame = cv2.imencode(".jpg", frame, self.__encoding_parameters)
+                    data = pickle.dumps(frame, 0)
+                    size = len(data)
 
-                try:
-                    self.__client_socket.send(struct.pack(">L", size) + data)
-                except ConnectionResetError:
-                    self.__running = False
-                except ConnectionAbortedError:
-                    self.__running = False
-                except BrokenPipeError:
-                    self.__running = False
+                    try:
+                        self.__client_socket.send(struct.pack(">L", size) + data)
+                    except (
+                        ConnectionResetError,
+                        ConnectionAbortedError,
+                        BrokenPipeError,
+                    ):
+                        self.__running = False
 
-            key_thread.join()
-            self._cleanup()
-        except Exception as e:
-            print_colored(e, "red")
-            
+                key_thread.join()
+                self._cleanup()
+                break  # Exit the retry loop if the connection is successful
+
+            except ConnectionRefusedError:
+                print_colored(
+                    "Connection refused! Retrying in {} seconds...".format(RETRY_DELAY),
+                    "red",
+                )
+                RETRY_ATTEMPTS -= 1
+                time.sleep(RETRY_DELAY)  # Wait before retrying
+
+            except KeyboardInterrupt:
+                self.__running = False
+                break
+
+            except Exception as e:
+                print_colored(e, "red")
+                break  # Exit the loop on other exceptions
+
+        if RETRY_ATTEMPTS == 0:
+            print_colored("All retry attempts failed. Exiting.", "red")
+
     def start_stream(self):
         if self.__running:
             print("Client is already streaming!")
