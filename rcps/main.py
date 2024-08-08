@@ -7,7 +7,7 @@ import argparse
 
 from rcps.utils.base import StreamingServer, ScreenShareClient
 from rcps.utils._constant import WELCOME_MESSAGE, DOCS
-from rcps.utils.utils import print_colored, load_menu
+from rcps.utils.utils import print_colored, load_menu, is_valid_ipv4_address
 
 
 def home_page():
@@ -102,8 +102,9 @@ def main():
 
         ipaddr, port = str(args.ipaddr).strip(), int(args.port)
 
-        if len([i for i in ipaddr.split(".") if i.isdigit()]) != 4:
-            raise Exception("Invalid ip address.")
+        if not is_valid_ipv4_address(ipaddr):
+            print(ipaddr)
+            raise Exception("Invalid ipv4 address.")
 
         if args.server:
             server = StreamingServer(ipaddr, port, slots=4, quit_key="q")

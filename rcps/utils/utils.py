@@ -103,6 +103,14 @@ def get_ips():
 
     return [i.split(":")[1].strip() for i in ip.split("\n") if i != ""]
 
+def get_code():
+    response = subprocess.run(['ipconfig'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+    response = response.split("IPv4 Address")[-1].split('\n')[0].strip('\r').split(':')[-1].strip()
+    return response
+
+def is_valid_ipv4_address(ip):
+    parts = ip.strip().split('.')
+    return (len(parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in parts))
 
 if __name__ == "__main__":
     print(get_ips())

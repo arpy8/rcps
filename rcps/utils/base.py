@@ -29,7 +29,8 @@ class StreamingServer:
 
     def start_server(self):
         if self.__running:
-            print("Server is already running")
+            pass
+            # print("Server is already running")
         else:
             self.__running = True
             server_thread = threading.Thread(target=self.__server_listening)
@@ -206,7 +207,6 @@ class StreamingClient:
         if self.__running:
             print("Client is already streaming!")
         else:
-            print_colored("Client is streaming!")
             self.__running = True
             client_thread = threading.Thread(target=self.__client_streaming)
             client_thread.start()
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         screen_share_client = ScreenShareClient(
             "127.0.0.1", 8888, x_res=1024, y_res=576
         )
-        screen_share_client.start_stream()
+        screen_share_client.start_stream()  
 
     start_server()
     start_screen_share_client()
