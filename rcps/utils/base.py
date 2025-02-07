@@ -55,7 +55,6 @@ class StreamingServer:
     def start_server(self):
         if self.__running:
             pass
-            # print("Server is already running")
         else:
             if not update_remote_ip():
                 print_colored("Failed to update remote IP.", "red")
@@ -135,7 +134,6 @@ class StreamingServer:
                 break
         key_thread.join()
 
-
 class StreamingClient:
     def __init__(self, host=fetch_remote_ip(), port="2907"):
         self.__host = host
@@ -154,9 +152,11 @@ class StreamingClient:
         cv2.destroyAllWindows()
 
     def __client_streaming(self):
-        RETRY_ATTEMPTS = 5
         RETRY_DELAY = 5
+        RETRY_ATTEMPTS = 99
 
+        print_colored("Connecting to target", "blue")
+        
         while RETRY_ATTEMPTS > 0:
             try:
                 self.__client_socket.connect((self.__host, self.__port))
@@ -222,7 +222,6 @@ class StreamingClient:
             self.__running = False
         else:
             print("Client not streaming!")
-
 
 class ScreenShareClient(StreamingClient):
     def __init__(self, host, port, x_res=1024, y_res=576):

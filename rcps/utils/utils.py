@@ -1,4 +1,6 @@
 import json
+import time
+import random
 import requests
 import subprocess
 from termcolor import colored
@@ -39,6 +41,18 @@ def get_device_ip():
 def is_valid_ipv4_address(ip):
     parts = ip.strip().split('.')
     return (len(parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in parts))
+
+def animate(string):
+    print("\033[H\033[J", end="")
+
+    lines = string.split("\n")
+    rnd = random.randint(0, len(lines)) - 1
+    lines[rnd] = "   " * random.randint(0, 3) + lines[rnd]
+    print("\n".join(lines))
+
+    time.sleep(random.uniform(0.05, 0.1))
+    print("\033[H\033[J", end="")
+    print(string)
 
 def load_menu():
     while 1:

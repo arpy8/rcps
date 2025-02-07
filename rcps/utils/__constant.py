@@ -28,6 +28,9 @@ DEFAULT_PORT = 2907
 CLIENT_HOST = None
 CLIENT_PORT = 2907
 
+IP_STORE_API = "https://arpy8-rcps-ip-store.hf.space"
+BEARER_TOKEN = "iwishicoulddeletedecember14th"
+
 
 # _BANNER = f"""
 # 01110010 01100011 01110000 01110011 01110010 01100011
@@ -71,21 +74,6 @@ Client side documentation:\n
     For now, please visit the following link:\n
         https://youtu.be/-p0a9BJTEvA\n
 """
-
-IP_STORE_API = "https://arpy8-rcps-ip-store.hf.space"
-BEARER_TOKEN = "iwishicoulddeletedecember14th"
-
-def animate(string):
-    print("\033[H\033[J", end="")
-
-    lines = string.split("\n")
-    rnd = random.randint(0, len(lines)) - 1
-    lines[rnd] = "   " * random.randint(0, 3) + lines[rnd]
-    print("\n".join(lines))
-
-    time.sleep(random.uniform(0.05, 0.1))
-    print("\033[H\033[J", end="")
-    print(string)
 
 
 if __name__ == "__main__":

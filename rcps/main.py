@@ -88,18 +88,17 @@ def main():
                     ipaddr, port = DEFAULT_HOST, DEFAULT_PORT
                 elif args.listen:
                     ipaddr, port = fetch_remote_ip(), DEFAULT_PORT
-            
-            ipaddr, port = str(args.ipaddr).strip(), int(args.port)
+            else:
+                ipaddr, port = str(args.ipaddr).strip(), int(args.port)
 
             if not is_valid_ipv4_address(ipaddr):
-                print(ipaddr)
-                raise Exception("Invalid ipv4 address.")
+                raise Exception(f"Invalid ipv4 address: {ipaddr}")
 
-            if args.server:
+            if args.listen:
                 server = StreamingServer(ipaddr, port, slots=4, quit_key="q")
                 server.start_server()
 
-            if args.listen:
+            if args.server:
                 screen_share_client = ScreenShareClient(ipaddr, port, x_res=1024, y_res=576)
                 screen_share_client.start_stream()
 
