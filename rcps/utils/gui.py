@@ -1,6 +1,7 @@
 import os
 import customtkinter
 from PIL import Image
+from pkg_resources import resource_filename
 from rcps.utils.base import StreamingServer, ScreenShareClient
 from rcps.utils.utils import fetch_remote_ip
 
@@ -9,13 +10,13 @@ customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
 
 def path(file):
-    return os.path.join(os.path.dirname(__file__), "../assets/", file)
+    return resource_filename("rcps", os.path.join("assets", file))
     
-def launch_target(ipaddr="0.0.0.0", port=2907):
+def launch_host(ipaddr="0.0.0.0", port=2907):
     server = StreamingServer(ipaddr, port, slots=4, quit_key="q")
     server.start_server()
     
-def launch_host(ipaddr=fetch_remote_ip(), port=2907):
+def launch_target(ipaddr=fetch_remote_ip(), port=2907):
     client = ScreenShareClient(ipaddr, port=port, x_res=1024, y_res=576)
     client.start_stream()
 
