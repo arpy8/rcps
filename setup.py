@@ -33,5 +33,5 @@ setup(
     ],
     include_package_data=True,
     packages=find_packages(),
-    package_data={"rcps": ["*.txt", "*.json"]},
+    package_data={"rcps": ["*.txt", "*.json", "*.png", "*.ico"]},
 )

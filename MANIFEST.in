@@ -1,1 +1,1 @@
-recursive-include rcps//data *
+recursive-include rcps//assets *
