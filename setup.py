@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="rcps",
-    version="0.0.3",
+    version="0.0.4",
     author="arpy8",
     description="A tool to control a target pc remotely with a bunch of other tools.",
     long_description=long_description,
