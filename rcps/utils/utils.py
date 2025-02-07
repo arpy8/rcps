@@ -1,11 +1,44 @@
+import json
+import requests
 import subprocess
 from termcolor import colored
-from rcps.utils._constant import _BANNER, DEFAULT_HOST, DEFAULT_PORT
+from rcps.utils.__constant import _BANNER, DEFAULT_HOST, DEFAULT_PORT, IP_STORE_API, BEARER_TOKEN
 
 
 def print_colored(text, color="green"):
     print(colored(text, color))
 
+def update_remote_ip():
+    device_ip = get_device_ip()
+
+    response = requests.post(
+        f"{IP_STORE_API}/set-ip",
+        json={"ip": device_ip},
+        headers={"Authorization": f"Bearer {BEARER_TOKEN}"}
+    )
+    
+    return json.loads(response.text)["status"] == "success"
+
+def fetch_remote_ip():
+    response = requests.get(
+        f"{IP_STORE_API}/get-ip",
+        headers={"Authorization": f"Bearer {BEARER_TOKEN}"}
+    )
+    response = json.loads(response.text)
+
+    if response["status"] == "success":
+        return response["ip"]
+    else:
+        return None
+
+def get_device_ip():
+    response = subprocess.run(['ipconfig'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+    response = response.split("IPv4 Address")[-1].split('\n')[0].strip('\r').split(':')[-1].strip()
+    return response
+
+def is_valid_ipv4_address(ip):
+    parts = ip.strip().split('.')
+    return (len(parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in parts))
 
 def load_menu():
     while 1:
@@ -77,40 +110,5 @@ def load_menu():
             print_colored("Invalid choice.", "red")
             continue
 
-
-def _run_command(command):
-    try:
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        process = subprocess.Popen(
-            command,
-            startupinfo=startupinfo,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            stdin=subprocess.PIPE,
-            shell=True,
-            text=True,
-        ).stdout.read()
-        return str(process) + "\n"
-
-    except subprocess.CalledProcessError as e:
-        return f"Error: {e}"
-
-
-def get_ips():
-    command = ["ipconfig", "|", "findstr", "/i", "ipv4"]
-    ip = _run_command(command)
-
-    return [i.split(":")[1].strip() for i in ip.split("\n") if i != ""]
-
-def get_code():
-    response = subprocess.run(['ipconfig'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-    response = response.split("IPv4 Address")[-1].split('\n')[0].strip('\r').split(':')[-1].strip()
-    return response
-
-def is_valid_ipv4_address(ip):
-    parts = ip.strip().split('.')
-    return (len(parts) == 4 and all(part.isdigit() and 0 <= int(part) <= 255 for part in parts))
-
 if __name__ == "__main__":
-    print(get_ips())
+    print(fetch_remote_ip())

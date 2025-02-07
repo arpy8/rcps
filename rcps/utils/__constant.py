@@ -24,6 +24,7 @@ import random
 
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 2907
+
 CLIENT_HOST = None
 CLIENT_PORT = 2907
 
@@ -66,11 +67,13 @@ Server side documentation:\n
 
 Client side documentation:\n
     To launch the server side script, use the -c flag.\n
-    Use the The ip address and port.\n\nExample usage:\n\nrcps -c -i 246.53.232.17 -p 8888
+    Use the The ip address and port.\n\nExample usage:\n\nrcps -c -i 0.0.0.0 -p 8888
     For now, please visit the following link:\n
         https://youtu.be/-p0a9BJTEvA\n
 """
 
+IP_STORE_API = "https://arpy8-rcps-ip-store.hf.space"
+BEARER_TOKEN = "iwishicoulddeletedecember14th"
 
 def animate(string):
     print("\033[H\033[J", end="")

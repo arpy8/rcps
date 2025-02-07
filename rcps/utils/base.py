@@ -8,12 +8,12 @@ import pyautogui
 import numpy as np
 import pyautogui as pg
 from pynput.keyboard import Listener
-from rcps.utils.utils import print_colored
-from rcps.utils._key_maps import convert_key_to_str, convert_key
+from rcps.utils.__key_maps import convert_key_to_str, convert_key
+from rcps.utils.utils import print_colored, update_remote_ip, fetch_remote_ip
 
 
 class StreamingServer:
-    def __init__(self, host, port, slots=8, quit_key="q"):
+    def __init__(self, host="0.0.0.0", port="2907", slots=8, quit_key="q"):
         self.__host = host
         self.__port = port
         self.__slots = slots
@@ -27,17 +27,10 @@ class StreamingServer:
     def __init_socket(self):
         self.__server_socket.bind((self.__host, self.__port))
 
-    def start_server(self):
-        if self.__running:
-            pass
-            # print("Server is already running")
-        else:
-            self.__running = True
-            server_thread = threading.Thread(target=self.__server_listening)
-            server_thread.start()
-
     def __server_listening(self):
         self.__server_socket.listen()
+        print_colored("Server started at {}:{}".format(self.__host, self.__port), "blue")
+        
         while self.__running:
             self.__block.acquire()
             connection, address = self.__server_socket.accept()
@@ -58,6 +51,18 @@ class StreamingServer:
                 ),
             )
             thread.start()
+            
+    def start_server(self):
+        if self.__running:
+            pass
+            # print("Server is already running")
+        else:
+            if not update_remote_ip():
+                print_colored("Failed to update remote IP.", "red")
+            
+            self.__running = True
+            server_thread = threading.Thread(target=self.__server_listening)
+            server_thread.start()
 
     def stop_server(self):
         if self.__running:
@@ -73,11 +78,11 @@ class StreamingServer:
 
     def __client_connection(self, connection, address):
         def show(key):
-            try:
+            # try:
                 self.key_str = convert_key_to_str(key)
                 connection.sendall(self.key_str.encode("utf-8"))
-            except Exception as e:
-                print_colored(e, "red")
+            # except Exception as e:
+            #     print_colored(e, "red")
 
         def listen_keys():
             with Listener(on_press=show) as listener:
@@ -118,6 +123,7 @@ class StreamingServer:
                 frame = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
                 frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
                 cv2.imshow(str(address), frame)
+
                 if cv2.waitKey(1) == ord(self.__quit_key):
                     connection.close()
                     self.__used_slots -= 1
@@ -131,7 +137,7 @@ class StreamingServer:
 
 
 class StreamingClient:
-    def __init__(self, host, port):
+    def __init__(self, host=fetch_remote_ip(), port="2907"):
         self.__host = host
         self.__port = port
         self._configure()
@@ -182,7 +188,7 @@ class StreamingClient:
 
                 key_thread.join()
                 self._cleanup()
-                break  # Exit the retry loop if the connection is successful
+                break
 
             except ConnectionRefusedError:
                 print_colored(
