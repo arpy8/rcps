@@ -5,9 +5,9 @@ with open("README.md", "r") as f:
 
 setup(
     name="rcps",
-    version="0.0.1",
-    author="arpy8 & cloaky233",
-    description="A tool trojan for control your computer remotely with bunch of other tools.",
+    version="0.0.2",
+    author="arpy8",
+    description="A tool to control a target pc remotely with a bunch of other tools.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=[
