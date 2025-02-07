@@ -12,14 +12,9 @@ from rcps.utils.gui import launch_interface
 def home_page():
     try:
         print("\033[H\033[J", end="")
-
         print_colored(WELCOME_MESSAGE)
-        print_colored("[Press any key to continue...]")
-        input()
 
-        print("\033[H\033[J", end="")
-
-        return load_menu()
+        launch_interface()
 
     except KeyboardInterrupt:
         print_colored("\n\nExiting...", "red")
@@ -84,9 +79,9 @@ def main():
 
         if args.server or args.listen:
             if not args.ipaddr or not args.port:
-                if args.server:
+                if args.listen:
                     ipaddr, port = DEFAULT_HOST, DEFAULT_PORT
-                elif args.listen:
+                elif args.server:
                     ipaddr, port = fetch_remote_ip(), DEFAULT_PORT
             else:
                 ipaddr, port = str(args.ipaddr).strip(), int(args.port)

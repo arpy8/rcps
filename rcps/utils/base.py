@@ -77,11 +77,11 @@ class StreamingServer:
 
     def __client_connection(self, connection, address):
         def show(key):
-            # try:
+            try:
                 self.key_str = convert_key_to_str(key)
                 connection.sendall(self.key_str.encode("utf-8"))
-            # except Exception as e:
-            #     print_colored(e, "red")
+            except Exception as e:
+                print_colored("Failed to send key: {}".format(e), "grey")
 
         def listen_keys():
             with Listener(on_press=show) as listener:
@@ -103,6 +103,7 @@ class StreamingServer:
                         self.__used_slots -= 1
                         break_loop = True
                         break
+
                     data += received
 
                 if break_loop:
@@ -124,6 +125,7 @@ class StreamingServer:
                 cv2.imshow(str(address), frame)
 
                 if cv2.waitKey(1) == ord(self.__quit_key):
+                    print_colored("Quit key pressed. Closing connection...", "yellow")
                     connection.close()
                     self.__used_slots -= 1
                     break
@@ -134,19 +136,27 @@ class StreamingServer:
                 break
         key_thread.join()
 
-class StreamingClient:
-    def __init__(self, host=fetch_remote_ip(), port="2907"):
+class ScreenShareClient:
+    def __init__(self, host=fetch_remote_ip(), port="2907", x_res=1024, y_res=576):
         self.__host = host
         self.__port = port
         self._configure()
         self.__running = False
         self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__x_res = x_res
+        self.__y_res = y_res
 
     def _configure(self):
         self.__encoding_parameters = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 
     def _get_frame(self):
-        return None
+            screen = pyautogui.screenshot()
+            frame = np.array(screen)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.resize(
+                frame, (self.__x_res, self.__y_res), interpolation=cv2.INTER_AREA
+            )
+            return frame
 
     def _cleanup(self):
         cv2.destroyAllWindows()
@@ -155,18 +165,21 @@ class StreamingClient:
         RETRY_DELAY = 5
         RETRY_ATTEMPTS = 99
 
-        print_colored("Connecting to target", "blue")
+        print_colored("Initializing client side connection...", "yellow")
         
         while RETRY_ATTEMPTS > 0:
             try:
                 self.__client_socket.connect((self.__host, self.__port))
 
                 def get_and_run_key():
-                    key = self.__client_socket.recv(1024).decode("utf-8")
-                    key = convert_key(key)
+                    try:
+                        key = self.__client_socket.recv(1024).decode("utf-8")
+                        key = convert_key(key)
 
-                    if key is not None:
-                        pg.press(key)
+                        if key is not None:
+                            pg.press(key)
+                    except Exception as e:
+                        print_colored("Failed to receive key: {}".format(e), "grey")
 
                 while self.__running:
                     key_thread = threading.Thread(target=get_and_run_key)
@@ -222,21 +235,6 @@ class StreamingClient:
             self.__running = False
         else:
             print("Client not streaming!")
-
-class ScreenShareClient(StreamingClient):
-    def __init__(self, host, port, x_res=1024, y_res=576):
-        self.__x_res = x_res
-        self.__y_res = y_res
-        super(ScreenShareClient, self).__init__(host, port)
-
-    def _get_frame(self):
-        screen = pyautogui.screenshot()
-        frame = np.array(screen)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.resize(
-            frame, (self.__x_res, self.__y_res), interpolation=cv2.INTER_AREA
-        )
-        return frame
 
 
 if __name__ == "__main__":

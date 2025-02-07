@@ -58,7 +58,7 @@ _BANNER = """
 
 WELCOME_MESSAGE = f"""{_BANNER}
 
-RCPS is a simple and lightweight tool to control remote devices connected over the same network.
+RCPS is a simple and lightweight tool to control remote pc connected over the same network.
 """
 
 DOCS = """
