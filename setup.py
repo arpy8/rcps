@@ -19,6 +19,7 @@ setup(
         "pynput",
         "opencv-python",
         "pyautogui",
+        "customtkinter",
     ],
     entry_points={
         "console_scripts": [
